@@ -1,0 +1,320 @@
+{
+	"info": {
+		"_postman_id": "8c57a990-ec4a-41a5-b6f9-30b34554d466",
+		"name": "Cat Facts API",
+		"description": "This API provides endpoints to get random cat facts",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "33357198"
+	},
+	"item": [
+		{
+			"name": "breeds",
+			"item": [
+				{
+					"name": "Returns a list of breeds",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.variables.set(\"pages\", [1 , 2 , 3, 4])\r",
+									"\r",
+									"const pages = pm.variables.get(\"pages\")\r",
+									"\r",
+									"console.log(pages)"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Validate the status code (200 for success)\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Validate response structure \r",
+									"pm.test(\"Response structure is correct\", function() {\r",
+									"    let data = pm.response.json();\r",
+									"    pm.expect(data).to.have.property(\"data\");\r",
+									"    pm.expect(data.data).to.be.an(\"array\").that.is.not.empty;\r",
+									"\r",
+									"    // Check each item in the data array for the required keys\r",
+									"    data.data.forEach((item, index) => {\r",
+									"        pm.test(`Item ${index + 1} has correct keys`, function() {\r",
+									"            pm.expect(item).to.have.all.keys(\"breed\", \"country\", \"origin\", \"coat\", \"pattern\");\r",
+									"        });\r",
+									"    });\r",
+									"});\r",
+									"\r",
+									"let data = pm.response.json()\r",
+									"console.log(data)\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/breeds?{{pages}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"breeds"
+							],
+							"query": [
+								{
+									"key": "{{pages}}",
+									"value": null
+								}
+							]
+						},
+						"description": "returns a list of breeds"
+					},
+					"response": []
+				}
+			],
+			"description": "Folder for breeds"
+		},
+		{
+			"name": "fact",
+			"item": [
+				{
+					"name": "Returns a random cat fact",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1. Validate the status code (200 for success)\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// 2. Validate response structure \r",
+									"pm.test(\"Response structure is correct\", function() {\r",
+									"    let data = pm.response.json();\r",
+									"    pm.expect(data).to.have.property(\"fact\");\r",
+									"    pm.expect(data.fact).to.not.be.an(\"array\");\r",
+									"    pm.expect(data).to.have.all.keys(\"fact\", \"length\")\r",
+									"    })\r",
+									"\r",
+									"// 3. Check if the fact length is within max length (140)\r",
+									"pm.test(\"Fact length is within max length\", function () {\r",
+									"    let data = pm.response.json();\r",
+									"    const maxLength = pm.collectionVariables.get(\"max_length\")\r",
+									"    pm.expect(data.fact.length).to.be.below(parseInt(maxLength) + 1);\r",
+									"})\r",
+									"\r",
+									"// 4. send 5 requests, store facts into factsArray, once stored print Array and check that facts are unique from each other\r",
+									"\r",
+									"// Function to check uniqueness of facts\r",
+									"function checkUniqueFacts(factsArray) {\r",
+									"    const uniqueFacts = new Set(factsArray); //each value must be unique for Set\r",
+									"    pm.test(\"All facts are unique\", function () {\r",
+									"        pm.expect(uniqueFacts.size).to.eql(factsArray.length);\r",
+									"    });\r",
+									"}\r",
+									"\r",
+									"const numRequests = 5;\r",
+									"let factsArray = [];\r",
+									"let completedRequests = 0;\r",
+									"\r",
+									"for (let i = 0; i < numRequests; i++) {\r",
+									"    pm.sendRequest(\"https://catfact.ninja/fact\", function (err, res) {\r",
+									"        if (err) {\r",
+									"            console.error(err);\r",
+									"            return;\r",
+									"        }\r",
+									"\r",
+									"        let data = res.json();\r",
+									"        factsArray.push(data.fact);\r",
+									"        completedRequests++;\r",
+									"\r",
+									"        if (completedRequests === numRequests) {\r",
+									"            // When all requests are completed, check for uniqueness\r",
+									"            console.log(factsArray)\r",
+									"            checkUniqueFacts(factsArray);\r",
+									"\r",
+									"        }\r",
+									"\r",
+									"    });\r",
+									"\r",
+									"}\r",
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/fact?max_length={{max_length}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"fact"
+							],
+							"query": [
+								{
+									"key": "max_length",
+									"value": "{{max_length}}"
+								}
+							]
+						},
+						"description": "returns a random cat fact"
+					},
+					"response": []
+				}
+			],
+			"description": "Folder for fact"
+		},
+		{
+			"name": "facts",
+			"item": [
+				{
+					"name": "Get a list of cat facts",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// 1. Validate the status code (200 for success)\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"console.log(pm.response.json())\r",
+									"\r",
+									"// 2. Validate response structure \r",
+									"pm.test(\"Response structure is correct\", function() {\r",
+									"    let data = pm.response.json();\r",
+									"    pm.expect(data).to.have.property(\"data\");\r",
+									"    pm.expect(data.data).to.be.an(\"array\").that.is.not.empty;\r",
+									"\r",
+									"    // Check each item in the data array for the required keys\r",
+									"    data.data.forEach((item, index) => {\r",
+									"        pm.test(`Item ${index + 1} has correct keys`, function() {\r",
+									"            pm.expect(item).to.have.all.keys(\"fact\", \"length\");\r",
+									"        });\r",
+									"    });\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/facts?page=34",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"facts"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "34"
+								}
+							]
+						},
+						"description": "Get a list of cat facts"
+					},
+					"response": []
+				}
+			],
+			"description": "Folder for facts"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "max_length",
+			"value": "140",
+			"type": "string"
+		},
+		{
+			"key": "url",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
